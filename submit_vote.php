@@ -19,9 +19,10 @@ $username = $_SESSION['username'];
 
 
 // OPTIONAL: check if user already voted
-$check = mysqli_query($conn, "
-SELECT * FROM votes WHERE username='$username'
-");
+$stmt = mysqli_prepare($conn, "SELECT * FROM votes WHERE username = ?");
+mysqli_stmt_bind_param($stmt, "s", $username);
+mysqli_stmt_execute($stmt);
+$check = mysqli_stmt_get_result($stmt);
 
 if(mysqli_num_rows($check) > 0){
     echo "You have already voted!";
@@ -30,12 +31,11 @@ if(mysqli_num_rows($check) > 0){
 
 
 // insert vote
-$query = "
-INSERT INTO votes (candidate_id, username)
-VALUES ('$candidate_id', '$username')
-";
+$stmt = mysqli_prepare($conn, "INSERT INTO votes (candidate_id, username) VALUES (?, ?)");
+mysqli_stmt_bind_param($stmt, "ss", $candidate_id, $username);
+$result = mysqli_stmt_execute($stmt);
 
-if(mysqli_query($conn,$query)){
+if($result){
     echo "<h2>Vote submitted successfully!</h2>";
     echo "<br><a href='results.php'>See Results</a>";
 }
